@@ -1,9 +1,6 @@
 <script>
 
 import * as Fingerprint from "@fingerprintjs/fingerprintjs";
-import 'vue3-carousel/dist/carousel.css';
-import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
-
 
 export default {
   data() {
@@ -14,11 +11,8 @@ export default {
     }
   },
   methods: {
-    onSlideStart(slide) {
-      this.sliding = true
-    },
-    onSlideEnd(slide) {
-      this.sliding = false
+    show() {
+      console.log(document.querySelector('.active').getAttribute('data-key'))
     }
   },
   async mounted() {
@@ -36,12 +30,6 @@ export default {
   async created() {
     this.videos = (await (await fetch("http://localhost:8080/list/videos")).json())
   },
-  components: {
-    Carousel,
-    Slide,
-    Pagination,
-    Navigation,
-  }
 }
 </script>
 
@@ -54,39 +42,30 @@ export default {
       </b-alert>
     </template>
     <div style="display: flex; justify-content: center;">
-      <!-- <b-carousel id="carousel-fade" style="text-shadow: 0px 0px 2px #000; height: 100vh;" fade controls indicators
-        img-width="1024" img-height="840">
-        <b-carousel-slide :caption="v.title" v-for="(v, i) in videos" :key="i" style="height: 100vh;">
-          <video>
-            <source :src="'http://127.0.0.1:8080/videos/' + v.file">
-          </video>
-          <h2>{{ v.title }}</h2>
-          <h3>By: {{ v.videographer }}</h3>
-        </b-carousel-slide>
-      </b-carousel> -->
-
-      <carousel style="width: 90vw; height: 100vh;" :itemsToShow="1" :wrapAround="true">
-        <slide v-for="({ videographer, title, file }, i) in videos" :key="i"
-          style="display: flex; flex-direction: column;">
-          <h2>{{ title }}</h2>
-          <br>
-          <video autoplay muted style="height: 40vw;">
-            <source :src="'http://127.0.0.1:8080/videos/' + file">
-          </video>
-          <br>
-          <h3>By: {{ videographer }}</h3>
-        </slide>
-
-        <template #addons="{ slidesCount, currentSlide }">
-          <navigation v-if="slidesCount > 1" />
-          <!-- <pagination /> -->
-          <!-- {{ currentSlide }} -->
-          <span ref="current" :current="currentSlide"></span>
-        </template>
-      </carousel>
+      <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel" data-bs-interval="0">
+        <div class="carousel-inner">
+          <div class="carousel-item" v-for="(v, i) in videos" :key="i" :class="{ active: i == 0 }" :data-key="i">
+            <video autoplay muted loop>
+              <source :src="'http://127.0.0.1:8080/videos/' + v.file">
+            </video>
+            <h2>{{ v.title }}</h2>
+            <h3>By: {{ v.videographer }}</h3>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls"
+          data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls"
+          data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
     </div>
   </b-overlay>
-  <h1>Slide: {{ currentSlide }} </h1>
+  <h1 @click="show">Slide: {{ currentSlide }} </h1>
 
 </template>
 
