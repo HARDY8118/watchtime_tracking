@@ -1,33 +1,64 @@
 <template>
-    <vueper-slides fade :touchable="false" :bullets="false">
-        <vueper-slide v-for="(slide, i) in images" :key="i" :image="'http://127.0.0.1:8080/images/' + slide.filename"
-            :title="slide.title" :content="'By ' + slide.photographer" />
-    </vueper-slides>
-</template>
+    <vueper-slides @next="slideStart" @slide="slideEnd" ref="slider" fade :touchable="false" :bullets="false"
+        :arrows="true">
+        <vueper-slide v-for="slide in images" :key="slide.id"
+            :image="config.serverAddress + '/images/' + slide.filename" :title="slide.title"
+            :content="'By ' + slide.photographer" />
 
-    <!-- <vueper-slides ref="videoSlides">
-      <vueper-slide v-for="(v, i) in videos" :key="i" :title="v.title" :content="v.videographer" :video="{
-        url: 'http://127.0.0.1:8080/videos/' + v.file, props: { pointerEvents: false, allow: 'autoplay', autoplay: true, loop: true, controls: false, muted: true }
-      }"></vueper-slide>
-      <template #arrow-left>&lt;PREV</template>
-      <template #arrow-right>NEXT&gt;</template>
-    </vueper-slides> -->
+        <template #arrow-left>
+            <svg viewBox="0 0 9 18" @click="prev">
+                <path stroke-linecap="round" d="m8 1 l-7 8 7 8"></path>
+            </svg>
+        </template>
+
+        <template #arrow-right>
+            <svg viewBox="0 0 9 18" @click="next">
+                <path stroke-linecap="round" d="m1 1 l7 8 -7 8"></path>
+            </svg>
+        </template>
+
+    </vueper-slides>
+    <h2 @click="next()">next</h2>
+
+</template>
 <script>
 
 import 'vueperslides/dist/vueperslides.css'
 import { VueperSlides, VueperSlide } from 'vueperslides'
+import config from "../assets/config.json"
 
 export default {
     name: 'Slider',
     components: { VueperSlides, VueperSlide },
     data() {
         return {
-            slides: []
+            slides: [],
+            config,
+            currentImageId: null
         }
     },
     props: {
-        images: Array
-    }
+        images: Array,
+        fingerprintid: String
+    },
+    methods: {
+        slideEnd({ currentSlide }) {
+            // console.log("Started", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
+            navigator.sendBeacon(config.serverAddress + "/switch", `started:${currentSlide.image.match(/(\d+)\.jpg/)[1]}:${Date.now()}`)
+        },
+        slideStart({ currentSlide }) {
+            // console.log("Ended", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
+            navigator.sendBeacon(config.serverAddress + "/switch", `ended:${currentSlide.image.match(/(\d+)\.jpg/)[1]}:${Date.now()}`)
+        }
+    },
+    // watch: {
+    //     images(newVal, oldVal) {
+    //         if (!!newVal) {
+    //             this.currentImageId = newVal[0].filename.match(/(\d+)\.jpg/)[1]
+    //             console.log("Started ", this.currentImageId, Date.now())
+    //         }
+    //     }
+    // }
 }
 </script>
 

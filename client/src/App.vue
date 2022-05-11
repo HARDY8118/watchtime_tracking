@@ -8,6 +8,7 @@ export default {
     return {
       status: "loading",
       images: [],
+      fingerprintid: null
     }
   },
   methods: {
@@ -17,9 +18,10 @@ export default {
     // await new Promise(resolve => setTimeout(resolve, 3000))
     try {
       const result = await (await Fingerprint.load()).get();
-      console.log(result.visitorId)
+      // console.log(result.visitorId)
+      this.fingerprintid = result.visitorId
       // await new Promise(resolve => setTimeout(resolve, 5000))
-      this.status = "Done"
+      // this.status = "Done"
     } catch (e) {
       console.error(e)
     }
@@ -32,14 +34,14 @@ export default {
 </script>
 
 <template>
-  <b-overlay :show="status !== 'Done'" rounded="sm">
+  <b-overlay :show="!fingerprintid" rounded="sm">
     <template #overlay>
       <b-alert show variant="info" style="width: 90vw; text-align: center;">
         <span class="overlay-status">{{ status }}</span>
         <br>
       </b-alert>
     </template>
-    <Slider :images="images" />
+    <Slider v-if="!!images" :images="images" :fingerprintid="fingerprintid" />
   </b-overlay>
 </template>
 
@@ -78,5 +80,4 @@ export default {
   animation: loadingdots 1s ease infinite;
   content: "";
 }
-
 </style>
