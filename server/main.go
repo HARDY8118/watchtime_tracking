@@ -30,8 +30,8 @@ func main() {
 	router := gin.New()
 	router.SetTrustedProxies([]string{"127.0.0.1"})
 
-	router.GET("/list/videos", CORSMiddleware(), func(c *gin.Context) {
-		listFile, err := os.Open("./assets/videolist.json")
+	router.GET("/list/images", CORSMiddleware(), func(c *gin.Context) {
+		listFile, err := os.Open("./assets/imagelist.json")
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -39,18 +39,20 @@ func main() {
 			})
 		} else {
 
-			var videolist []struct {
-				Videographer string `json:"videographer"`
-				File         string `json:"file"`
+			var imagelist []struct {
 				Title        string `json:"title"`
+				File         string `json:"filename"`
+				Category     string `json:"category"`
+				Photographer string `json:"photographer"`
+                Source       string `json:"source"`
 			}
-			if err = json.NewDecoder(listFile).Decode(&videolist); err != nil {
+			if err = json.NewDecoder(listFile).Decode(&imagelist); err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error": "failed to load data",
 				})
 			} else {
-				c.JSON(200, videolist)
+				c.JSON(200, imagelist)
 			}
 		}
 	})
