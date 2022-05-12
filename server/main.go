@@ -28,7 +28,7 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func main() {
 	router := gin.New()
-	router.SetTrustedProxies([]string{"127.0.0.1"})
+	// router.SetTrustedProxies([]string{"127.0.0.1"})
 
 	router.GET("/list/images", CORSMiddleware(), func(c *gin.Context) {
 		listFile, err := os.Open("./assets/imagelist.json")
@@ -44,7 +44,7 @@ func main() {
 				File         string `json:"filename"`
 				Category     string `json:"category"`
 				Photographer string `json:"photographer"`
-                Source       string `json:"source"`
+				Source       string `json:"source"`
 			}
 			if err = json.NewDecoder(listFile).Decode(&imagelist); err != nil {
 				fmt.Println(err)
@@ -61,4 +61,5 @@ func main() {
 	router.Use(static.Serve("/images", static.LocalFile("./assets/images", false)))
 
 	router.Run(":8080")
+	// router.RunTLS(":8080", "./ssl/server.pem", "./ssl/server.key")
 }

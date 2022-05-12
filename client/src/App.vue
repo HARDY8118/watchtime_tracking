@@ -29,7 +29,13 @@ export default {
     }
   },
   async created() {
-    this.images = (await (await fetch(config.serverAddress + "/list/images")).json())
+    try {
+      // this.images = (await (await fetch(config.serverAddress + "/list/images")).json())
+      this.images = (await (await fetch(config.serverAddress + "/list/images")).json())
+    } catch (e) {
+      console.log(e)
+      this.status = e.message
+    }
   },
   components: { Slider }
 }

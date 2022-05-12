@@ -1,6 +1,6 @@
 <template>
-    <vueper-slides @next="slideStart" @slide="slideEnd" ref="slider" fade :touchable="false" :bullets="false"
-        :arrows="true">
+    <vueper-slides @ready="slideStart" @next="slideStart" @slide="slideEnd" ref="slider" fade :touchable="false"
+        :bullets="false" :arrows="true">
         <vueper-slide v-for="slide in images" :key="slide.id"
             :image="config.serverAddress + '/images/' + slide.filename" :title="slide.title"
             :content="'By ' + slide.photographer" />
@@ -42,11 +42,11 @@ export default {
     },
     methods: {
         slideEnd({ currentSlide }) {
-            // console.log("Started", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
+            console.log("Started", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
             navigator.sendBeacon(config.serverAddress + "/switch", `started:${currentSlide.image.match(/(\d+)\.jpg/)[1]}:${Date.now()}`)
         },
         slideStart({ currentSlide }) {
-            // console.log("Ended", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
+            console.log("Ended", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
             navigator.sendBeacon(config.serverAddress + "/switch", `ended:${currentSlide.image.match(/(\d+)\.jpg/)[1]}:${Date.now()}`)
         },
     },
