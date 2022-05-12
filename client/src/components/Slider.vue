@@ -6,19 +6,18 @@
             :content="'By ' + slide.photographer" />
 
         <template #arrow-left>
-            <svg viewBox="0 0 9 18" @click="prev">
+            <svg viewBox="0 0 9 18">
                 <path stroke-linecap="round" d="m8 1 l-7 8 7 8"></path>
             </svg>
         </template>
 
         <template #arrow-right>
-            <svg viewBox="0 0 9 18" @click="next">
+            <svg viewBox="0 0 9 18">
                 <path stroke-linecap="round" d="m1 1 l7 8 -7 8"></path>
             </svg>
         </template>
 
     </vueper-slides>
-    <h2 @click="next()">next</h2>
 
 </template>
 <script>
@@ -49,16 +48,15 @@ export default {
         slideStart({ currentSlide }) {
             // console.log("Ended", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
             navigator.sendBeacon(config.serverAddress + "/switch", `ended:${currentSlide.image.match(/(\d+)\.jpg/)[1]}:${Date.now()}`)
-        }
+        },
     },
-    // watch: {
-    //     images(newVal, oldVal) {
-    //         if (!!newVal) {
-    //             this.currentImageId = newVal[0].filename.match(/(\d+)\.jpg/)[1]
-    //             console.log("Started ", this.currentImageId, Date.now())
-    //         }
-    //     }
-    // }
+    watch: {
+        images(newVal, oldVal) {
+            if (!!newVal) {
+                // console.log("Started ", this.currentImageId, Date.now())
+            }
+        }
+    }
 }
 </script>
 

@@ -2,13 +2,15 @@
 
 import * as Fingerprint from "@fingerprintjs/fingerprintjs";
 import Slider from "./components/Slider.vue";
+import config from "./assets/config.json"
 
 export default {
   data() {
     return {
       status: "loading",
       images: [],
-      fingerprintid: null
+      fingerprintid: null,
+      config
     }
   },
   methods: {
@@ -27,7 +29,7 @@ export default {
     }
   },
   async created() {
-    this.images = (await (await fetch("http://localhost:8080/list/images")).json())
+    this.images = (await (await fetch(config.serverAddress + "/list/images")).json())
   },
   components: { Slider }
 }
@@ -41,7 +43,7 @@ export default {
         <br>
       </b-alert>
     </template>
-    <Slider v-if="!!images" :images="images" :fingerprintid="fingerprintid" />
+    <Slider :images="images" :fingerprintid="fingerprintid" />
   </b-overlay>
 </template>
 
