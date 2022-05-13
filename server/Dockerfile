@@ -20,7 +20,6 @@ WORKDIR /app
 
 COPY --from=builder /app/build/ .
 COPY --from=builder /app/assets/ ./assets/
-COPY ./ssl /app/ssl
 
 EXPOSE 8080
 

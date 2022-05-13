@@ -60,6 +60,20 @@ func main() {
 	router.Use(static.Serve("/videos", static.LocalFile("./assets/videos", false)))
 	router.Use(static.Serve("/images", static.LocalFile("./assets/images", false)))
 
+	router.POST("/switch", func(c *gin.Context) {
+		// fmt.Println(c.Request.GetBody())
+		// fmt.Println(c.Request.Body.)
+		d, e := c.GetRawData()
+
+		if e != nil {
+			fmt.Println(e)
+		} else {
+			fmt.Println(string(d))
+		}
+
+		fmt.Println()
+	})
+
 	router.Run(":8080")
 	// router.RunTLS(":8080", "./ssl/server.pem", "./ssl/server.key")
 }
