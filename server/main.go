@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 )
 
 // https://stackoverflow.com/a/29439630/8411160
@@ -28,7 +32,13 @@ func CORSMiddleware() gin.HandlerFunc {
 
 func main() {
 	router := gin.New()
-	// router.SetTrustedProxies([]string{"127.0.0.1"})
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: "",
+	})
+
+	ctx := context.Background()
 
 	router.GET("/list/images", CORSMiddleware(), func(c *gin.Context) {
 		listFile, err := os.Open("./assets/imagelist.json")
@@ -68,7 +78,30 @@ func main() {
 		if e != nil {
 			fmt.Println(e)
 		} else {
-			fmt.Println(string(d))
+			data := strings.Split(string(d), ":")
+			fingerprint := data[0]
+			action := data[1]
+			imageId := data[2]
+			ts, _ := strconv.Atoi(data[3])
+
+			fmt.Printf("%s %s watching %s at %d\n", fingerprint, action, imageId, ts)
+			if strings.Compare(action, "started") == 0 {
+				rdb.HSet(ctx, fingerprint, imageId, ts).Result()
+				rdb.Expire(ctx, fingerprint, 60)
+			} else if strings.Compare(action, "ended") == 0 {
+				t, e := rdb.HGet(ctx, fingerprint, imageId).Result()
+
+				startts, _ := strconv.Atoi(t)
+
+				if e != nil {
+					fmt.Println(e)
+				} else if e == redis.Nil {
+					fmt.Printf("Start time not available for %s", imageId)
+				} else {
+					// fmt.Println(action, t)
+					fmt.Printf("%d %d %d", startts, startts, ts-startts)
+				}
+			}
 		}
 
 		fmt.Println()
