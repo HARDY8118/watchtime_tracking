@@ -24,6 +24,7 @@ export default {
       this.fingerprintid = result.visitorId
       // await new Promise(resolve => setTimeout(resolve, 5000))
       // this.status = "Done"
+      console.log(this.fingerprintid)
     } catch (e) {
       console.error(e)
     }
