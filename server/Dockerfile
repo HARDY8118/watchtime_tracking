@@ -10,8 +10,6 @@ RUN go mod tidy
 
 ENV GOOS=linux
 
-RUN echo $GOOS
-
 RUN go build -o ./build/server .
 
 FROM alpine:latest

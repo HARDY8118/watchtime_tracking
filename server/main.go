@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -71,8 +72,6 @@ func main() {
 	router.Use(static.Serve("/images", static.LocalFile("./assets/images", false)))
 
 	router.POST("/switch", func(c *gin.Context) {
-		// fmt.Println(c.Request.GetBody())
-		// fmt.Println(c.Request.Body.)
 		d, e := c.GetRawData()
 
 		if e != nil {
@@ -82,29 +81,30 @@ func main() {
 			fingerprint := data[0]
 			action := data[1]
 			imageId := data[2]
-			ts, _ := strconv.Atoi(data[3])
+			ts := data[3]
 
-			fmt.Printf("%s %s watching %s at %d\n", fingerprint, action, imageId, ts)
+			fmt.Printf("%s %s watching %s at %s\n", fingerprint, action, imageId, ts)
 			if strings.Compare(action, "started") == 0 {
 				rdb.HSet(ctx, fingerprint, imageId, ts).Result()
-				rdb.Expire(ctx, fingerprint, 60)
+				rdb.Expire(ctx, fingerprint, 60*time.Second)
 			} else if strings.Compare(action, "ended") == 0 {
 				t, e := rdb.HGet(ctx, fingerprint, imageId).Result()
 
 				startts, _ := strconv.Atoi(t)
+				endts, _ := strconv.Atoi(ts)
 
 				if e != nil {
-					fmt.Println(e)
-				} else if e == redis.Nil {
-					fmt.Printf("Start time not available for %s", imageId)
+					if e == redis.Nil {
+						fmt.Printf("Start time not available for %s", imageId)
+					} else {
+						fmt.Println(e)
+					}
 				} else {
-					// fmt.Println(action, t)
-					fmt.Printf("%d %d %d", startts, startts, ts-startts)
+					fmt.Printf("Started: %d, Ended: %d, Total: %d\n", startts, endts, endts-startts)
+					rdb.HDel(ctx, fingerprint, imageId)
 				}
 			}
 		}
-
-		fmt.Println()
 	})
 
 	router.Run(":8080")
