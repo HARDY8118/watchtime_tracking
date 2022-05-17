@@ -54,9 +54,24 @@ func main() {
 
 	// --- RABBITMQ ---
 
-	conn, err := amqp.Dial("amqp://" + os.Getenv("RABBITMQ_USER") + ":" + os.Getenv("RABBITMQ_PASS") + "@" + os.Getenv("RABBITMQ_HOST") + ":" + os.Getenv("RABBITMQ_PORT") + "/")
+	time.Sleep(10 * time.Second)
 
+	log.Println("amqp://" + os.Getenv("RABBITMQ_USER") + ":" + os.Getenv("RABBITMQ_PASS") + "@" + os.Getenv("RABBITMQ_HOST") + ":" + os.Getenv("RABBITMQ_PORT") + "/")
+	conn, err := amqp.Dial("amqp://" + os.Getenv("RABBITMQ_USER") + ":" + os.Getenv("RABBITMQ_PASS") + "@" + os.Getenv("RABBITMQ_HOST") + ":" + os.Getenv("RABBITMQ_PORT") + "/")
 	logErrorAndExit(err, "Failed to connect to rabbitmq")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	logErrorAndExit(err, "Failed to open channel")
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare("engagetime", false, true, false, false, nil)
+
+	msgs, err := ch.Consume(q.Name, "", true, false, false, false, nil)
+
+	logErrorAndExit(err, "Failed to register consumer")
+
+	// forever := make(chan bool)
 
 	// --- RABBITMQ ---
 
@@ -94,7 +109,7 @@ func main() {
 		d, e := c.GetRawData()
 
 		if e != nil {
-			logErrorAndExit(err, "")
+			logErrorAndExit(err, "Failed to get POST data")
 		} else {
 			data := strings.Split(string(d), ":")
 			fingerprint := data[0]
@@ -119,12 +134,22 @@ func main() {
 						logErrorAndExit(e, "Redis error")
 					}
 				} else {
-					log.Printf("Started: %d, Ended: %d, Total: %d\n", startts, endts, endts-startts)
+					delta := endts - startts
+					log.Printf("::REDIS::Started: %d, Ended: %d, Total: %d\n", startts, endts, delta)
 					rdb.HDel(ctx, fingerprint, imageId)
+					err = ch.Publish("", q.Name, false, false, amqp.Publishing{ContentType: "text/plain", Body: []byte(imageId + ":" + strconv.Itoa(delta))})
 				}
 			}
 		}
 	})
+
+	go func() {
+		for d := range msgs {
+			log.Printf("\n\nReceived: %s\n\n\n", d.Body)
+		}
+	}()
+
+	// <-forever
 
 	router.Run(":8080")
 	// router.RunTLS(":8080", "./ssl/server.pem", "./ssl/server.key")
