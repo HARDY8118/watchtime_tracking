@@ -1,18 +1,15 @@
 version: "3"
 
 services:
-  client:
-    build: ./client
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit
+      - RABBITMQ_DEFAULT_PASS=carrot
     ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - server
+      - "5672:5672"
 
-  server:
-    build: ./server
-    ports:
-      - "8080:8080"
 
   redis:
     image: redis:7.0.0-alpine
@@ -20,3 +17,48 @@ services:
     ports:
       - "6379:6379"
     
+  server:
+    build: ./server
+    container_name: server
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # - REDIS_PASS=rdis
+      - RABBITMQ_USER=rabbit
+      - RABBITMQ_PASS=carrot
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+    depends_on:
+      - redis
+      - rabbitmq
+
+  client:
+    build: ./client
+    container_name: client
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - server
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.2.0
+    container_name: elastic
+    ports:
+      - "9200:9200"
+
+  logstash:
+    build: ./logstash
+    container_name: logstash
+    environment:
+      - name=value
+      - RABBITMQ_USER=rabbit
+      - RABBITMQ_PASS=carrot
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+    depends_on:
+      - rabbitmq
+      - elasticsearch
+  

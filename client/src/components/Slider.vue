@@ -43,14 +43,14 @@ export default {
     methods: {
         slideEnd({ currentSlide }) {
             if (currentSlide) {
-                console.log("Started", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
-                navigator.sendBeacon(config.serverAddress + "/switch", `${this.$props.fingerprintid}:started:${currentSlide.image.match(/(\d+)\.jpg/)[1]}:${Date.now()}`)
+                console.log("ended", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
+                navigator.sendBeacon(config.serverAddress + "/switch", `${this.$props.fingerprintid}:ended:${currentSlide.image.match(/(\d+)\.jpg/)[1]}:${Date.now()}`)
             }
         },
         slideStart({ currentSlide }) {
             if (currentSlide) {
-                console.log("Ended", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
-                navigator.sendBeacon(config.serverAddress + "/switch", `${this.$props.fingerprintid}:ended:${currentSlide.image.match(/(\d+)\.jpg/)[1]}:${Date.now()}`)
+                console.log("started", currentSlide.image.match(/(\d+)\.jpg/)[1], Date.now())
+                navigator.sendBeacon(config.serverAddress + "/switch", `${this.$props.fingerprintid}:started:${currentSlide.image.match(/(\d+)\.jpg/)[1]}:${Date.now()}`)
             }
         },
     },
