@@ -56,7 +56,6 @@ func main() {
 
 	time.Sleep(10 * time.Second)
 
-	log.Println("amqp://" + os.Getenv("RABBITMQ_USER") + ":" + os.Getenv("RABBITMQ_PASS") + "@" + os.Getenv("RABBITMQ_HOST") + ":" + os.Getenv("RABBITMQ_PORT") + "/")
 	conn, err := amqp.Dial("amqp://" + os.Getenv("RABBITMQ_USER") + ":" + os.Getenv("RABBITMQ_PASS") + "@" + os.Getenv("RABBITMQ_HOST") + ":" + os.Getenv("RABBITMQ_PORT") + "/")
 	logErrorAndExit(err, "Failed to connect to rabbitmq")
 	defer conn.Close()
@@ -90,6 +89,7 @@ func main() {
 				Category     string `json:"category"`
 				Photographer string `json:"photographer"`
 				Source       string `json:"source"`
+				Id           string `json:"id"`
 			}
 			if err = json.NewDecoder(listFile).Decode(&imagelist); err != nil {
 				c.JSON(500, gin.H{
@@ -137,7 +137,7 @@ func main() {
 					delta := endts - startts
 					log.Printf("::REDIS::Started: %d, Ended: %d, Total: %d\n", startts, endts, delta)
 					rdb.HDel(ctx, fingerprint, imageId)
-					err = ch.Publish("", q.Name, false, false, amqp.Publishing{ContentType: "text/plain", Body: []byte(imageId + ":" + strconv.Itoa(delta))})
+					err = ch.Publish("", q.Name, false, false, amqp.Publishing{ContentType: "text/plain", Body: []byte("{\"imageId\":\"" + imageId + "\", \"delta\":" + strconv.Itoa(delta) + "}")})
 				}
 			}
 		}
