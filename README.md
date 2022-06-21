@@ -2,6 +2,8 @@
 
 Elasticsearch - Logstash - Kibana based slideshow tracking.
 
+Slideshow Images via Pexels. All photographers attributed.
+
 ## Client
 
 - Built using Vue3
